@@ -1,0 +1,17 @@
+---
+- name: Converge
+  hosts: all
+  become: yes
+  become_method: sudo
+  environment:
+    SHELL: /bin/bash
+  roles:
+    - role: boss-ansible-role-core
+    - role: boss-ansible-role-fact
+    - role: boss-ansible-role-environment
+
+    - role: boss-ansible-role-docker
+      bossjones__user: root
+      bossjones__group: root
+
+

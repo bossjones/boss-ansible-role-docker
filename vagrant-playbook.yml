@@ -1,0 +1,9 @@
+---
+- name: Vagrant Test Playbook
+  hosts: all
+  roles:
+    - role: boss-ansible-role-docker
+      bossjones__user: root
+      bossjones__group: root
+
+
