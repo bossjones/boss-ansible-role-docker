@@ -15,3 +15,8 @@
 - git: https://github.com/bossjones/boss-ansible-role-core.git
   version: master
   dst: molecule/default/.molecule/roles/boss-ansible-role-core/
+
+
+- git: https://github.com/geerlingguy/ansible-role-pip.git
+  version: master
+  dst: molecule/default/.molecule/roles/geerlingguy.pip

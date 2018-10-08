@@ -1,2 +1,30 @@
 ---
-# defaults file for boss-ansible-role-docker
+boss__docker__install_method: 'pkg'
+# Edition can be one of: 'ce' (Community Edition) or 'ee' (Enterprise Edition).
+boss__docker__edition: 'ce'
+boss__docker__package: "docker-{{ boss__docker__edition }}"
+boss__docker__package_state: present
+
+# Service options.
+boss__docker__service_state: started
+boss__docker__service_enabled: true
+boss__docker__restart_handler_state: restarted
+
+# Docker Compose options.
+boss__docker__install_compose: true
+boss__docker__compose_version: "1.22.0"
+boss__docker__compose_path: /usr/local/bin/docker-compose
+
+# Used only for Debian/Ubuntu. Switch 'stable' to 'edge' if needed.
+boss__docker__apt_release_channel: stable
+boss__docker__apt_arch: amd64
+boss__docker__apt_repository: "deb [arch={{ boss__docker__apt_arch }}] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} {{ boss__docker__apt_release_channel }}"
+boss__docker__apt_ignore_key_error: true
+
+# Used only for RedHat/CentOS/Fedora.
+boss__docker__yum_repo_url: https://download.docker.com/linux/{{ (ansible_distribution == "Fedora") | ternary("fedora","centos") }}/docker-{{ boss__docker__edition }}.repo
+boss__docker__yum_repo_enable_edge: 0
+boss__docker__yum_repo_enable_test: 0
+
+# A list of users who will be added to the docker group.
+boss__docker__users: []

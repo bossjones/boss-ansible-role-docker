@@ -1,2 +1,21 @@
 ---
-# tasks file for boss-ansible-role-docker
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- include_tasks: install-pkg.yml
+  when: boss__docker__install_method == 'pkg'
+
+- include_tasks: install-shell.yml
+  when: boss__docker__install_method == 'shell'
+
+- name: Ensure handlers are notified now to avoid firewall conflicts.
+  meta: flush_handlers
+
+- include_tasks: docker-compose.yml
+  when: boss__docker__install_compose
+
+- include_tasks: docker-users.yml
+  when: boss__docker__users

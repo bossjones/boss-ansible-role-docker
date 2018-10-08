@@ -1,17 +1,13 @@
 ---
 - name: Converge
   hosts: all
-  become: yes
-  become_method: sudo
-  environment:
-    SHELL: /bin/bash
+  become: True
+
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=yes cache_valid_time=600
+      when: ansible_os_family == 'Debian'
+
   roles:
-    - role: boss-ansible-role-core
-    - role: boss-ansible-role-fact
-    - role: boss-ansible-role-environment
-
+    # - role: bossjones.docker
     - role: boss-ansible-role-docker
-      bossjones__user: root
-      bossjones__group: root
-
-

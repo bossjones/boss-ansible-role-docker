@@ -1,0 +1,69 @@
+---
+- name: Install Docker.
+  package:
+    name: "{{ boss__docker__package }}"
+    state: "{{ boss__docker__package_state }}"
+  notify: restart docker
+
+- name: Ensure Docker is started and enabled at boot.
+  service:
+    name: docker
+    state: "{{ boss__docker__service_state }}"
+    enabled: "{{ boss__docker__service_enabled }}"
+
+
+# SOURCE: https://github.com/nickjj/ansible-docker/blob/master/tasks/main.yml
+- name: Remove Upstart config file
+  file:
+    path: "/etc/default/docker"
+    state: "absent"
+
+- name: Ensure systemd directory exists
+  file:
+    path: "/etc/systemd/system"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: Remove systemd unit file
+  file:
+    path: "/etc/systemd/system/docker.service"
+    state: "absent"
+  when: boss__docker__remove_package
+
+- name: Generate systemd unit file
+  template:
+    src: "etc/systemd/system/docker.service.j2"
+    dest: "/etc/systemd/system/docker.service"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: boss__docker__register_systemd_service
+  when: not boss__docker__remove_package
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: True
+  notify: ["Restart Docker"]
+  when: not boss__docker__remove_package or boss__docker__register_systemd_service is changed
+
+- name: Add user(s) to "docker" group
+  user:
+    name: "{{ item }}"
+    groups: "docker"
+    append: True
+  loop: "{{ boss__docker__users }}"
+  when: not boss__docker__remove_package and boss__docker__users
+
+- name: Install Python for managing Docker login credentials
+  apt:
+    name: "python"
+    update_cache: True
+    cache_valid_time: "{{ boss__docker__apt_cache_time }}"
+  when: not boss__docker__remove_package and boss__docker__registries
+
+- name: Install docker-py for managing Docker login credentials
+  pip:
+    name: "docker-py"
+  when: not boss__docker__remove_package and boss__docker__registries

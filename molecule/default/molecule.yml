@@ -1,30 +1,50 @@
-
-
 ---
 dependency:
   name: gilt
-
-
-
-
-
 driver:
   name: docker
-
-
 lint:
   name: yamllint
-  enabled: False
-
+  options:
+    config-file: molecule/default/yaml-lint.yml
 platforms:
   # source: https://blog.opsfactory.rocks/testing-ansible-roles-with-molecule-97ceca46736a
   # source: https://github.com/solita/docker-systemd
   # source: https://github.com/solita/docker-systemd-ssh/blob/master/Dockerfile
   # start_command: docker run -d --name systemd --security-opt seccomp=unconfined --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -t solita/ubuntu-systemd
-  - name: boss-ansible-role-docker-trusty
+  # - name: boss-ansible-role-sysctl-trusty
+  #   image: solita/ubuntu-systemd
+  #   image_version: latest
+  #   privileged: True
+  #   groups:
+  #       - servers
+  #   capabilities:
+  #     - SYS_ADMIN
+  #   volumes:
+  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  #   command: /sbin/init
+
+  # FIXME: 9/30/2018 this was what we were using!
+  # --------------------------------------------
+  # - name: boss-ansible-role-sysctl-trusty
+  #   image: solita/ubuntu-systemd
+  #   image_version: latest
+  #   privileged: True
+  # --------------------------------------------
+  # TODO: Figure out if we want to use geerlingguy docker container or not [BEGIN]
+  # --------------------------------------------------------------------------------
+  # - name: instance
+  #   image: geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible
+  #   command: ${MOLECULE_DOCKER_COMMAND:-"sleep infinity"}
+  #   privileged: true
+  #   pre_build_image: true
+  # ------------------------------------------------------------------------[END]---
+  - name: docker-sysctl1
     image: solita/ubuntu-systemd
     image_version: latest
     privileged: True
+    pre_build_image: true
+    command: ${MOLECULE_DOCKER_COMMAND:-"sleep infinity"}
     groups:
         - servers
     capabilities:
@@ -32,43 +52,22 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     command: /sbin/init
-  # - name: fedora-01
-  #   image: bossjones/fedora24-systemd-ansible:latest
-  #   privileged: True
-  #   command: /usr/sbin/init
-  #   # run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-  #   # init: /usr/lib/systemd/systemd
-  #   groups:
-  #     - fedora
-  # TODO: USE THESES
-  # SOURCE: https://zapier.com/engineering/ansible-molecule/
-  #   - name: centos7
-  #   image: retr0h/centos7-systemd-ansible
-  #   image_version: latest
-  #   privileged: True
-  # - name: consul-ubuntu-16.04
-  #   image: solita/ubuntu-systemd
-  #   image_version: latest
-  #   privileged: True
-  # - name: consul-ubuntu-14.04
-  #   image: ubuntu-upstart
-  #   image_version: latest
-  #   privileged: True
-
-
-
+    security_opts:
+      - seccomp=unconfined
 provisioner:
   name: ansible
   options:
     vvv: True
-
   lint:
     name: ansible-lint
-    enabled: False
+    # enabled: False
     # EANSIBLE0013 should not be raised for shell tasks that use globs.
     options:
       x: ANSIBLE0013
-
+  playbooks:
+    converge: ${MOLECULE_PLAYBOOK:-playbook.yml}
+scenario:
+  name: default
 verifier:
   name: testinfra
   options:
@@ -76,7 +75,6 @@ verifier:
   lint:
     name: flake8
     enabled: False
-
 
 scenario:
   name: default
@@ -91,6 +89,3 @@ scenario:
     - side_effect
     - verify
     - destroy
-
-
-
