@@ -51,6 +51,9 @@
   notify: ["Restart Docker"]
   when: not boss__docker__remove_package or boss__docker__register_systemd_service is changed
 
+
+- name: dump /etc/systemd/system/docker.service
+  command: 'cat /etc/systemd/system/docker.service'
 # - name: Add user(s) to "docker" group
 #   user:
 #     name: "{{ item }}"
