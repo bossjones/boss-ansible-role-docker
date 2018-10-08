@@ -20,7 +20,6 @@
     mode: 0755
   when: ansible_architecture is match("x86_64")
 
-
 - name: Remove docker-compose (if configured).
   apt:
     name: "docker-compose"

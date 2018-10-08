@@ -14,12 +14,6 @@
   when: boss__docker__install_method == 'shell'
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-- name: Ensure Docker is started and enabled at boot.
-  service:
-    name: docker
-    state: "{{ boss__docker__service_state }}"
-    enabled: "{{ boss__docker__service_enabled }}"
-
 
 # SOURCE: https://github.com/nickjj/ansible-docker/blob/master/tasks/main.yml
 - name: Remove Upstart config file
@@ -84,6 +78,44 @@
   pip:
     name: "docker-py"
   when: not boss__docker__remove_package and boss__docker__registries
+
+# - name: Manage login credentials for 1 or more Docker registries
+#   docker_login:
+#     registry_url: "{{ item.registry_url | default(omit) }}"
+#     username: "{{ item.username }}"
+#     password: "{{ item.password }}"
+#     email: "{{ item.email | default(omit)}}"
+#     reauthorize: "{{ item.reauthorize | default(omit) }}"
+#     state: "{{ item.state | default(omit) }}"
+#   loop: "{{ boss__docker_registries }}"
+#   when: not boss__docker_remove_package and boss__docker_registries
+#   become_user: "{{ item.system_user | default(omit) }}"
+
+- name: Remove cron tasks for Docker commands
+  cron:
+    name: "{{ item.name }}"
+    state: "absent"
+  loop: "{{ boss__docker__cron_tasks }}"
+  when: boss__docker__remove_package and boss__docker__cron_tasks
+
+- name: Create cron tasks for Docker commands
+  cron:
+    name: "{{ item.name }}"
+    job: "{{ item.job }}"
+    minute: "{{ item.schedule[0] }}"
+    hour: "{{ item.schedule[1] }}"
+    day: "{{ item.schedule[2] }}"
+    month: "{{ item.schedule[3] }}"
+    weekday: "{{ item.schedule[4] }}"
+  loop: "{{ boss__docker__cron_tasks }}"
+  when: not boss__docker__remove_package and boss__docker__cron_tasks
+
+# FIXME: This might be broken
+- name: Ensure Docker is started and enabled at boot.
+  service:
+    name: docker
+    state: "{{ boss__docker__service_state }}"
+    enabled: "{{ boss__docker__service_enabled }}"
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
