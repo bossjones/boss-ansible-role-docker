@@ -39,7 +39,7 @@ def test_packages_installed(host, f):
 
 
 def test_docker_running_and_enabled(host):
-    docker = host.service("docker")
+    docker = host.service("docker-ce")
     assert docker.is_running
     assert docker.is_enabled
     # docker_socket = host.socket("udp://127.0.0.1:53")
@@ -49,10 +49,10 @@ def test_docker_running_and_enabled(host):
 
 
 def test_docker_user(host):
-    docker = host.user("docker")
+    docker = host.group("docker")
     assert docker.name == "docker"
     # assert docker.uid == "107"
     # assert docker.gid == 65534
-    assert "docker" in docker.groups
+    # assert "docker" in docker.groups
     # assert docker.home == "/var/lib/misc"
-    assert docker.shell == "/bin/false"
+    # assert docker.shell == "/bin/false"
