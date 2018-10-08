@@ -52,6 +52,7 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - /var/lib/docker:/var/lib/docker:rw
+      - /var/run/docker.sock:/var/run/docker.sock
     command: /sbin/init
     security_opts:
       - seccomp=unconfined
