@@ -10,7 +10,7 @@
     boss__docker__version: "18.03"
     boss__docker__users: ["test"]
     boss__docker__daemon_options:
-      - "--dns 8.8.8.8"
+      - "--dns 8.8.8.8 -H 0.0.0.0:2375 -H unix:///var/run/docker.sock $DOCKER_DAEMON_ARGS"
 
   pre_tasks:
     - name: Update apt cache.

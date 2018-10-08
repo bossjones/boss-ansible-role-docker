@@ -15,6 +15,19 @@ boss__docker__install_compose: True
 boss__docker__compose_version: "1.22.0"
 boss__docker__compose_path: /usr/local/bin/docker-compose
 
+# FIXME: Remove this if this works
+# Some of the OS distributions are not detected by Ansible correctly. This
+# variable can be used to fix that issue across all roles that use it.
+boss__core__distribution: '{{ ansible_lsb.id
+                        if (ansible_lsb|d() and ansible_lsb.id|d())
+                        else ansible_distribution }}'
+
+# Some of the OS releases are not detected by Ansible correctly. This variable
+# can be used to fix that issue across all roles that use it.
+boss__core__distribution_release: '{{ ansible_lsb.codename
+                                if (ansible_lsb|d() and ansible_lsb.codename|d())
+                                else ansible_distribution_release }}'
+
 # Used only for Debian/Ubuntu. Switch 'stable' to 'edge' if needed.
 boss__docker__apt_release_channel: stable
 # boss__docker__apt_arch: amd64
