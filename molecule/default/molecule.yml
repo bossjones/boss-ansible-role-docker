@@ -51,6 +51,7 @@ platforms:
       - SYS_ADMIN
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /var/lib/docker:/var/lib/docker:rw
     command: /sbin/init
     security_opts:
       - seccomp=unconfined
