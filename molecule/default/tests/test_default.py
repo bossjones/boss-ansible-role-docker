@@ -32,14 +32,14 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 
 @pytest.mark.parametrize('f',
-                         ['docker', 'ca-certificates'])
+                         ['docker-ce', 'ca-certificates'])
 def test_packages_installed(host, f):
     pkg = host.package(f)
     assert pkg.is_installed
 
 
 def test_docker_running_and_enabled(host):
-    docker = host.service("docker-ce")
+    docker = host.service("docker")
     assert docker.is_running
     assert docker.is_enabled
     # docker_socket = host.socket("udp://127.0.0.1:53")

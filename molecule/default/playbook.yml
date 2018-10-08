@@ -2,6 +2,8 @@
 - name: Converge
   hosts: all
   become: True
+  environment:
+    - DEBIAN_FRONTEND=noninteractive
 
   pre_tasks:
     - name: Update apt cache.
