@@ -9,5 +9,6 @@
       when: ansible_os_family == 'Debian'
 
   roles:
-    # - role: bossjones.docker
+    - role: geerlingguy.pip
     - role: boss-ansible-role-docker
+      boss__docker__install_method: "shell"
