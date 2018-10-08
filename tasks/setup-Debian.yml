@@ -12,6 +12,7 @@
     name:
       - apt-transport-https
       - ca-certificates
+      - apt-utils
     state: present
 
 - name: Add Docker apt key.
