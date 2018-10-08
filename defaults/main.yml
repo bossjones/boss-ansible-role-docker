@@ -42,7 +42,6 @@ boss__docker__remove_package: False
 
 boss__docker__version: "latest"
 
-# boss__docker__install_docker_compose: True
 # boss__docker__compose_version: "1.22.0"
 
 boss__docker__registries: []
