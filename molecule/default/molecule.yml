@@ -67,6 +67,20 @@ provisioner:
     # EANSIBLE0013 should not be raised for shell tasks that use globs.
     options:
       x: ANSIBLE0013
+  inventory:
+    host_vars:
+      docker-sysctl1:
+        # SOURCE: https://github.com/osism/ansible-hosts/blob/ce8147623491011269bf15291bd8bf83397ab1ff/molecule/default/molecule.yml
+        # NOTE: workaround for https://github.com/moby/moby/issues/22281
+        hosts_file: /etc/hosts.molecule
+        management_interface: lo0
+        inventory_hostname: docker-sysctl1
+        inventory_hostname_short: docker-sysctl1
+        ansible_lo0:
+          ipv4:
+            address: 127.0.0.1
+        ansible_default_ipv4:
+          address: 127.0.1.2
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-playbook.yml}
 scenario:
