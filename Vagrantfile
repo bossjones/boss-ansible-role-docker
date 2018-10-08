@@ -86,11 +86,11 @@ Vagrant.configure(2) do |config|
         vm_config.hostmanager.aliases = aliases
       end
 
-      # Enable provisioning with a shell script. Additional provisioners such as
-      # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
-      # documentation for more information about their specific syntax and use.
-      vm_config.vm.provision 'shell' do |s|
-        s.inline = <<-SHELL
+        # Enable provisioning with a shell script. Additional provisioners such as
+        # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+        # documentation for more information about their specific syntax and use.
+        vm_config.vm.provision 'shell' do |s|
+          s.inline = <<-SHELL
             if [ -f /vagrant_bootstrap ]; then
               echo "vagrant_bootstrap EXISTS ALREADY"
               exit 0
@@ -194,8 +194,8 @@ Vagrant.configure(2) do |config|
           touch /vagrant_bootstrap && \
           chown #{NON_ROOT_USER}:#{NON_ROOT_USER} /vagrant_bootstrap
           SHELL
-        s.privileged = true
-      end
+          s.privileged = true
+        end
 
       # FIXME: Get this into a role, ansible install bcc 9/29/2018
       #   vm_config.vm.provision 'shell' do |s|
@@ -219,7 +219,7 @@ Vagrant.configure(2) do |config|
           deploy_env: 'vagrant'
         }
         # ansible.skip_tags = %w[bootstrap]
-        ansible.raw_arguments = ['--forks=10']
+        ansible.raw_arguments = ["--forks=10"]
       end
     end
   end

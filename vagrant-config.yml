@@ -2,11 +2,29 @@
 :vms:
   docker1:
     :hostname: "docker1"
-    :ip: "192.168.46.100"
-    :ram: 512
-    :cpu: 1
+    :ip: "192.168.13.100"
+    :ram: 1024
+    :cpu: 2
+    :box: "debian/stretch64"
+
+  docker2:
+    :hostname: "docker2"
+    :ip: "192.168.13.101"
+    :ram: 1024
+    :cpu: 2
     :box: "debian/stretch64"
 
 :groups:
+  docker1:
+    - docker1
+  docker2:
+    - docker2
+  docker_servers:
+    - docker1
+    - docker2
   servers:
     - docker1
+    - docker2
+  dns_servers:
+    - docker1
+    - docker2
