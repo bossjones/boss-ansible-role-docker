@@ -51,13 +51,13 @@
   notify: ["Restart Docker"]
   when: not boss__docker__remove_package or boss__docker__register_systemd_service is changed
 
-- name: Add user(s) to "docker" group
-  user:
-    name: "{{ item }}"
-    groups: "docker"
-    append: True
-  loop: "{{ boss__docker__default_users }}"
-  when: not boss__docker__remove_package and boss__docker__default_users
+# - name: Add user(s) to "docker" group
+#   user:
+#     name: "{{ item }}"
+#     groups: "docker"
+#     append: True
+#   loop: "{{ boss__docker__default_users }}"
+#   when: not boss__docker__remove_package and boss__docker__default_users
 
 - name: Add user(s) to "docker" group
   user:
