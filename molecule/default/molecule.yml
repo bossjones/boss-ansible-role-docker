@@ -42,7 +42,7 @@ platforms:
   - name: docker-sysctl1
     image: solita/ubuntu-systemd
     image_version: latest
-    # privileged: True
+    privileged: True
     pre_build_image: true
     command: ${MOLECULE_DOCKER_COMMAND:-"sleep infinity"}
     groups:
