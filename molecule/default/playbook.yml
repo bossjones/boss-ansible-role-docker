@@ -7,11 +7,20 @@
 
   vars:
     hosts_file: /etc/hosts.molecule
+    boss__docker__version: "18.03"
+    boss__docker__users: ["test"]
+    boss__docker__daemon_options:
+      - "--dns 8.8.8.8"
 
   pre_tasks:
     - name: Update apt cache.
       apt: update_cache=yes cache_valid_time=600
       when: ansible_os_family == 'Debian'
+
+    - name: Add test user
+      user:
+        name: "test"
+        shell: "/bin/bash"
 
   roles:
     - role: boss-ansible-role-bootstrap
@@ -33,3 +42,45 @@
     - role: geerlingguy.pip
     - role: boss-ansible-role-docker
       boss__docker__install_method: "shell"
+
+
+
+
+  post_tasks:
+    - name: Ensure Docker gets installed
+      command: docker --version
+      register: result_pinned
+      changed_when: result_pinned.rc != 0
+
+    - name: Run the equivalent of "apt-get update"
+      apt:
+        update_cache: True
+      changed_when: False
+
+    - name: Ensure pinned Docker version wasn't updated
+      # This is valid because 18.06+ is currently out. If the pin failed then
+      # this docker --version would be different from the previous check.
+      command: docker --version
+      register: result
+      changed_when: result.stdout != result_pinned.stdout
+
+    - name: Ensure test user can access Docker without root access
+      command: groups test
+      register: result
+      changed_when: result.stdout.split(":")[1] | trim != "test docker"
+
+    - name: Ensure Docker Compose gets installed
+      command: docker-compose --version
+      register: result
+      changed_when: result.rc != 0
+
+    - name: Ensure /etc/systemd/system/docker.service contains '--dns 8.8.8.8'
+      # Double dashes: https://unix.stackexchange.com/a/11382
+      command: grep -- "--dns 8.8.8.8" /etc/systemd/system/docker.service
+      register: result
+      changed_when: result.rc != 0
+
+    - name: Ensure Docker clean up cron job was added
+      command: crontab -l
+      register: result
+      changed_when: not result.stdout is search("docker system prune -f")
