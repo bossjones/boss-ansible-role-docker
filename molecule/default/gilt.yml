@@ -1,22 +1,22 @@
 ---
 - git: https://github.com/bossjones/boss-ansible-role-users.git
   version: master
-  dst: molecule/default/.molecule/roles/boss-ansible-role-users/
+  # dst: molecule/default/.molecule/roles/boss-ansible-role-users/
 
 - git: https://github.com/bossjones/boss-ansible-role-fact.git
   version: master
-  dst: molecule/default/.molecule/roles/boss-ansible-role-fact/
+  # dst: molecule/default/.molecule/roles/boss-ansible-role-fact/
 
 
 - git: https://github.com/bossjones/boss-ansible-role-environment.git
   version: master
-  dst: molecule/default/.molecule/roles/boss-ansible-role-environment/
+  # dst: molecule/default/.molecule/roles/boss-ansible-role-environment/
 
 - git: https://github.com/bossjones/boss-ansible-role-core.git
   version: master
-  dst: molecule/default/.molecule/roles/boss-ansible-role-core/
+  # dst: molecule/default/.molecule/roles/boss-ansible-role-core/
 
 
 - git: https://github.com/geerlingguy/ansible-role-pip.git
   version: master
-  dst: molecule/default/.molecule/roles/geerlingguy.pip
+  # dst: molecule/default/.molecule/roles/geerlingguy.pip
