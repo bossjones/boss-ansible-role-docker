@@ -62,7 +62,7 @@ provisioner:
     vvv: True
   lint:
     name: ansible-lint
-    # enabled: False
+    enabled: False
     # EANSIBLE0013 should not be raised for shell tasks that use globs.
     options:
       x: ANSIBLE0013
