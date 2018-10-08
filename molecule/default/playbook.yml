@@ -3,7 +3,7 @@
   hosts: all
   become: True
   environment:
-    - DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND: noninteractive
 
   pre_tasks:
     - name: Update apt cache.
