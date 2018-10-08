@@ -11,6 +11,11 @@
       when: ansible_os_family == 'Debian'
 
   roles:
+    - role: boss-ansible-role-bootstrap
+    - role: boss-ansible-role-core
+    - role: boss-ansible-role-fact
+    - role: boss-ansible-role-environment
+    - role: boss-ansible-role-etckeeper
     - role: geerlingguy.pip
     - role: boss-ansible-role-docker
       boss__docker__install_method: "shell"

@@ -7,25 +7,27 @@ boss__docker__package_state: present
 
 # Service options.
 boss__docker__service_state: started
-boss__docker__service_enabled: true
+boss__docker__service_enabled: True
 boss__docker__restart_handler_state: restarted
 
 # Docker Compose options.
-boss__docker__install_compose: true
+boss__docker__install_compose: True
 boss__docker__compose_version: "1.22.0"
 boss__docker__compose_path: /usr/local/bin/docker-compose
 
 # Used only for Debian/Ubuntu. Switch 'stable' to 'edge' if needed.
 boss__docker__apt_release_channel: stable
-boss__docker__apt_arch: amd64
-boss__docker__apt_repository: "deb [arch={{ boss__docker__apt_arch }}] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} {{ boss__docker__apt_release_channel }}"
-boss__docker__apt_ignore_key_error: true
+# boss__docker__apt_arch: amd64
+boss__docker__apt_repository: "deb [arch={{ boss__docker__apt_arch }}] https://download.docker.com/linux/{{ boss__core__distribution|lower }} {{ boss__core__distribution_release }} {{ boss__docker__apt_release_channel }}"
+boss__docker__apt_ignore_key_error: True
 
 # Used only for RedHat/CentOS/Fedora.
-boss__docker__yum_repo_url: https://download.docker.com/linux/{{ (ansible_distribution == "Fedora") | ternary("fedora","centos") }}/docker-{{ boss__docker__edition }}.repo
+boss__docker__yum_repo_url: https://download.docker.com/linux/{{ (boss__core__distribution == "Fedora") | ternary("fedora","centos") }}/docker-{{ boss__docker__edition }}.repo
 boss__docker__yum_repo_enable_edge: 0
 boss__docker__yum_repo_enable_test: 0
 
+# A list of users who will be added to the docker group.
+boss__docker__default_users: ["{{ansible_user}}"]
 # A list of users who will be added to the docker group.
 boss__docker__users: []
 
@@ -36,35 +38,34 @@ boss__docker__users: []
 
 # ---
 
-# docker_remove_package: False
+boss__docker__remove_package: False
 
-# docker_edition: "ce"
-# docker_channel: "stable"
-# docker_version: "latest"
+# boss__docker__edition: "ce"
+# boss__docker__channel: "stable"
+# boss__docker__version: "latest"
 
-# docker_install_docker_compose: True
-# docker_compose_version: "1.22.0"
+# boss__docker__install_docker_compose: True
+# boss__docker__compose_version: "1.22.0"
 
-# docker_users: []
-# docker_registries: []
+# boss__docker__users: []
+boss__docker__registries: []
 
-# docker_daemon_options: []
-# docker_daemon_environment: []
+boss__docker__daemon_options: []
+boss__docker__daemon_environment: []
 
-# docker_cron_tasks:
-#   - job: docker system prune -f &> /dev/null
-#     name: "Docker clean up"
-#     schedule: ["0", "0", "*", "*", "0"]
+boss__docker__cron_tasks:
+  - job: docker system prune -f &> /dev/null
+    name: "Docker clean up"
+    schedule: ["0", "0", "*", "*", "0"]
 
+boss__docker__package_dependencies:
+  - "apt-transport-https"
+  - "ca-certificates"
+  - "software-properties-common"
+  - "gnupg2"
+  - "cron"
+  - "apt-utils"
 
-# docker_package_dependencies:
-#   - "apt-transport-https"
-#   - "ca-certificates"
-#   - "software-properties-common"
-#   - "gnupg2"
-#   - "cron"
-
-# docker_apt_key_id: "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
-# docker_apt_key_server: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
-# docker_apt_repository: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ docker_channel }}"
-# docker_apt_cache_time: 86400
+boss__docker__apt_key_id: "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+boss__docker__apt_key_server: "https://download.docker.com/linux/{{ boss__core__distribution | lower }}/gpg"
+boss__docker__apt_cache_time: 86400
