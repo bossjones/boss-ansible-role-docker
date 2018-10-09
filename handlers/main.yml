@@ -1,2 +1,9 @@
 ---
-# handlers file for boss-ansible-role-docker
+- name: restart docker
+  service: "name=docker state={{ boss__docker__restart_handler_state }}"
+
+# SOURCE: https://github.com/nickjj/ansible-docker/blob/master/handlers/main.yml
+- name: Restart Docker
+  service:
+    name: "docker"
+    state: "restarted"

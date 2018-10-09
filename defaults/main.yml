@@ -1,2 +1,81 @@
 ---
-# defaults file for boss-ansible-role-docker
+boss__docker__install_method: 'pkg'
+# Edition can be one of: 'ce' (Community Edition) or 'ee' (Enterprise Edition).
+boss__docker__edition: 'ce'
+boss__docker__package: "docker-{{ boss__docker__edition }}"
+boss__docker__package_state: present
+
+# Service options.
+boss__docker__service_state: started
+boss__docker__service_enabled: True
+boss__docker__restart_handler_state: restarted
+
+# Docker Compose options.
+boss__docker__install_compose: True
+boss__docker__compose_version: "1.22.0"
+boss__docker__compose_path: /usr/local/bin/docker-compose
+
+# FIXME: Remove this if this works
+# Some of the OS distributions are not detected by Ansible correctly. This
+# variable can be used to fix that issue across all roles that use it.
+boss__core__distribution: '{{ ansible_lsb.id
+                        if (ansible_lsb|d() and ansible_lsb.id|d())
+                        else ansible_distribution }}'
+
+# Some of the OS releases are not detected by Ansible correctly. This variable
+# can be used to fix that issue across all roles that use it.
+boss__core__distribution_release: '{{ ansible_lsb.codename
+                                if (ansible_lsb|d() and ansible_lsb.codename|d())
+                                else ansible_distribution_release }}'
+
+# Used only for Debian/Ubuntu. Switch 'stable' to 'edge' if needed.
+boss__docker__apt_release_channel: stable
+# boss__docker__apt_arch: amd64
+boss__docker__apt_repository: "deb [arch={{ boss__docker__apt_arch }}] https://download.docker.com/linux/{{ boss__core__distribution|lower }} {{ boss__core__distribution_release }} {{ boss__docker__apt_release_channel }}"
+boss__docker__apt_ignore_key_error: True
+
+# Used only for RedHat/CentOS/Fedora.
+boss__docker__yum_repo_url: https://download.docker.com/linux/{{ (boss__core__distribution == "Fedora") | ternary("fedora","centos") }}/docker-{{ boss__docker__edition }}.repo
+boss__docker__yum_repo_enable_edge: 0
+boss__docker__yum_repo_enable_test: 0
+
+# A list of users who will be added to the docker group.
+boss__docker__default_users: ["{{ansible_user}}"]
+# A list of users who will be added to the docker group.
+boss__docker__users: []
+
+
+
+# FIXME: Things prob won't work 100% till I include a subset of below
+# SOURCE: https://github.com/nickjj/ansible-docker/blob/master/defaults/main.yml
+
+# ---
+
+boss__docker__remove_package: False
+
+boss__docker__version: "latest"
+
+# boss__docker__compose_version: "1.22.0"
+
+boss__docker__registries: []
+
+boss__docker__daemon_options: []
+boss__docker__daemon_environment: []
+
+boss__docker__cron_tasks:
+  - job: docker system prune -f &> /dev/null
+    name: "Docker clean up"
+    schedule: ["0", "0", "*", "*", "0"]
+
+boss__docker__package_dependencies:
+  - "apt-transport-https"
+  - "ca-certificates"
+  - "software-properties-common"
+  - "gnupg2"
+  - "cron"
+  - "apt-utils"
+  - "mount"
+
+boss__docker__apt_key_id: "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+boss__docker__apt_key_server: "https://download.docker.com/linux/{{ boss__core__distribution | lower }}/gpg"
+boss__docker__apt_cache_time: 86400
