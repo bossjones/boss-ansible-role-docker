@@ -44,15 +44,25 @@ def test_docker_running_and_enabled(host):
     assert docker.is_enabled
     # docker_socket = host.socket("udp://127.0.0.1:53")
     # assert docker_socket.is_listening
-    # docker_socket = host.socket("tcp://127.0.0.1:53")
-    # assert docker_socket.is_listening
+    docker_socket = host.socket("tcp://0.0.0.0:2375")
+    assert docker_socket.is_listening
 
 
-def test_docker_user(host):
+def test_docker_group(host):
     docker = host.group("docker")
     assert docker.name == "docker"
     # assert docker.uid == "107"
     # assert docker.gid == 65534
     # assert "docker" in docker.groups
+    # assert docker.home == "/var/lib/misc"
+    # assert docker.shell == "/bin/false"
+
+
+def test_user(host):
+    user = host.user("test")
+    assert user.name == "test"
+    # assert docker.uid == "107"
+    # assert docker.gid == 65534
+    assert "docker" in user.groups
     # assert docker.home == "/var/lib/misc"
     # assert docker.shell == "/bin/false"

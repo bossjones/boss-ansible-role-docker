@@ -52,11 +52,6 @@ platforms:
       - SYS_ADMIN
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    #   - /var/lib/docker:/var/lib/docker:rw
-    #   - /var/run/docker.sock:/var/run/docker.sock
-    # tmpfs:
-    #   - /tmp
-    #   - /run
     ulimits:
       - nofile:262144:262144
     command: /sbin/init
