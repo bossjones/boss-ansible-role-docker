@@ -19,7 +19,7 @@
     name: "{{ item }}"
     update_cache: True
     cache_valid_time: "{{ boss__docker__apt_cache_time }}"
-  loop: "{{ boss__docker__package_dependencies }}"
+  with_items: "{{ boss__docker__package_dependencies }}"
 
 - name: Add Docker's GPG key
   apt_key:
