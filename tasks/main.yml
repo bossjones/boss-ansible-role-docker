@@ -59,7 +59,7 @@
 #     name: "{{ item }}"
 #     groups: "docker"
 #     append: True
-#   loop: "{{ boss__docker__default_users }}"
+#   with_items: "{{ boss__docker__default_users }}"
 #   when: not boss__docker__remove_package and boss__docker__default_users
 
 - name: Add user(s) to "docker" group
@@ -67,7 +67,7 @@
     name: "{{ item }}"
     groups: "docker"
     append: True
-  loop: "{{ boss__docker__users }}"
+  with_items: "{{ boss__docker__users }}"
   when: not boss__docker__remove_package and boss__docker__users
 
 - name: Install Python for managing Docker login credentials
@@ -90,7 +90,7 @@
 #     email: "{{ item.email | default(omit)}}"
 #     reauthorize: "{{ item.reauthorize | default(omit) }}"
 #     state: "{{ item.state | default(omit) }}"
-#   loop: "{{ boss__docker_registries }}"
+#   with_items: "{{ boss__docker_registries }}"
 #   when: not boss__docker_remove_package and boss__docker_registries
 #   become_user: "{{ item.system_user | default(omit) }}"
 
@@ -98,7 +98,7 @@
   cron:
     name: "{{ item.name }}"
     state: "absent"
-  loop: "{{ boss__docker__cron_tasks }}"
+  with_items: "{{ boss__docker__cron_tasks }}"
   when: boss__docker__remove_package and boss__docker__cron_tasks
 
 - name: Create cron tasks for Docker commands
@@ -110,7 +110,7 @@
     day: "{{ item.schedule[2] }}"
     month: "{{ item.schedule[3] }}"
     weekday: "{{ item.schedule[4] }}"
-  loop: "{{ boss__docker__cron_tasks }}"
+  with_items: "{{ boss__docker__cron_tasks }}"
   when: not boss__docker__remove_package and boss__docker__cron_tasks
 
 # FIXME: This might be broken
