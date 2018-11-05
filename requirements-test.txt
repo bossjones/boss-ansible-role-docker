@@ -39,7 +39,7 @@ jinja2-time==0.2.0        # via cookiecutter
 jinja2==2.10              # via ansible, click-completion, cookiecutter, jinja2-time, molecule
 markupsafe==1.0           # via jinja2
 mccabe==0.6.1             # via flake8
-molecule==2.19.0
+molecule==2.18.1
 monotonic==1.5            # via fasteners
 more-itertools==4.3.0     # via pytest
 paramiko==2.4.2           # via ansible
@@ -66,7 +66,7 @@ scandir==1.9.0            # via pathlib2
 sh==1.12.14               # via molecule, python-gilt
 six==1.11.0               # via ansible-lint, bcrypt, click-completion, cryptography, docker-py, docker-pycreds, fasteners, molecule, more-itertools, pathlib2, pynacl, pytest, python-dateutil, testinfra, websocket-client
 tabulate==0.8.2           # via molecule
-testinfra==1.16.0         # via molecule
+testinfra==1.14.1         # via molecule
 tree-format==0.1.2        # via molecule
 urllib3==1.24.1           # via requests
 websocket-client==0.54.0  # via docker-py
