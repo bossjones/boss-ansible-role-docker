@@ -3,4 +3,4 @@
 # from `get.docker.com` and then pipes the
 # script to `sh` so that it gets executed.
 - name: 'install docker'
-  command: 'bash -c "curl -fsSL https://get.docker.com/ | sh"'
+  command: 'bash -c "curl -fsSL https://get.docker.com/ | sh"; bash -c "touch /docker-installed-shell"' creates=/docker-installed-shell

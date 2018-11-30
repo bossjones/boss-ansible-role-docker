@@ -35,6 +35,7 @@ export PATH := ./venv/bin:$(PATH)
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+MAKE := make
 
 list_allowed_args := product ip command role tier
 
@@ -50,6 +51,12 @@ list:
 download-roles:
 	ansible-galaxy install -r requirements.yml --roles-path ./roles/
 
+download-roles-global:
+	ansible-galaxy install -r requirements.yml --roles-path=/etc/ansible/roles
+
+download-roles-global-force:
+	ansible-galaxy install --force -r requirements.yml --roles-path=/etc/ansible/roles
+
 raw:
 	$(call check_defined, product, Please set product)
 	$(call check_defined, command, Please set command)
@@ -64,7 +71,7 @@ install-virtualenv-osx:
 docker-run:
 	@virtualization/docker/docker-run.sh
 
-destroy:
+molecule-destroy:
 	molecule destroy
 
 install-cidr-brew:
@@ -132,3 +139,37 @@ install-deps-all:
 # 	pip install tox-travis
 # tox-install-all-notest:
 # 	tox -e py36 --notest
+
+up:
+	@bash ./scripts/up.sh
+
+rollback:
+	@bash ./scripts/rollback.sh
+
+commit:
+	vagrant sandbox commit
+
+reload:
+	@vagrant reload
+
+destroy:
+	@vagrant destroy -f
+
+run-ansible:
+	@ansible-playbook -i inventory.ini vagrant_playbook.yml -v
+
+run-ansible-docker:
+	@ansible-playbook -i inventory.ini vagrant_playbook.yml -v --tags docker-provision --flush-cache
+
+run-ansible-master:
+	@ansible-playbook -i inventory.ini vagrant_playbook.yml -v --tags "master"
+
+ping:
+	@ansible-playbook -v -i inventory.ini ping.yml
+
+# [ANSIBLE0013] Use shell only when shell functionality is required
+ansible-lint-role:
+	bash -c "find .* -type f -name '*.y*ml' ! -name '*.venv' -print0 | xargs -I FILE -t -0 -n1 ansible-lint -x ANSIBLE0006,ANSIBLE0007,ANSIBLE0010,ANSIBLE0013 FILE"
+
+yamllint-role:
+	bash -c "find .* -type f -name '*.y*ml' ! -name '*.venv' -print0 | xargs -I FILE -t -0 -n1 yamllint FILE"

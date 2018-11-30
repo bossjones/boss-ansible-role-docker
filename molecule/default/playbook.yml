@@ -7,10 +7,8 @@
 
   vars:
     hosts_file: /etc/hosts.molecule
-    boss__docker__version: "18.03"
+    boss__docker__version: "18.06"
     boss__docker__users: ["test"]
-    boss__docker__daemon_options:
-      - "--dns 8.8.8.8 -H 0.0.0.0:2375 -H unix:///var/run/docker.sock $DOCKER_DAEMON_ARGS"
 
   pre_tasks:
     - name: Update apt cache.
@@ -38,14 +36,14 @@
     - role: boss-ansible-role-core
     - role: boss-ansible-role-fact
     - role: boss-ansible-role-environment
-    - role: boss-ansible-role-etckeeper
+    # - role: boss-ansible-role-etckeeper
     - role: geerlingguy.pip
     - role: boss-ansible-role-docker
-      boss__docker__install_method: "shell"
+      boss__docker__install_method: "pkg"
 
-
-
-
+  ##################################################################################
+  # ansible unit tests
+  ##################################################################################
   post_tasks:
     - name: Ensure Docker gets installed
       command: docker --version
@@ -54,8 +52,8 @@
 
     - name: Run the equivalent of "apt-get update"
       apt:
-        update_cache: True
-      changed_when: False
+        update_cache: true
+      changed_when: false
 
     - name: Ensure pinned Docker version wasn't updated
       # This is valid because 18.06+ is currently out. If the pin failed then
@@ -74,13 +72,65 @@
       register: result
       changed_when: result.rc != 0
 
-    - name: Ensure /etc/systemd/system/docker.service contains '--dns 8.8.8.8'
-      # Double dashes: https://unix.stackexchange.com/a/11382
-      command: grep -- "--dns 8.8.8.8" /etc/systemd/system/docker.service
+    - name: Ensure /etc/docker/daemon.json contains defaults options
+      command: grep 10m /etc/docker/daemon.json
       register: result
       changed_when: result.rc != 0
 
-    - name: Ensure Docker clean up cron job was added
-      command: crontab -l
+    - name: Ensure /etc/docker/daemon.json contains custom options
+      command: grep 8.8.8.8 /etc/docker/daemon.json
       register: result
-      changed_when: not result.stdout is search("docker system prune -f")
+      changed_when: result.rc != 0
+
+    # - name: Ensure customized environment systemd unit file was created
+    #   command: >
+    #     grep -e '"HTTP_PROXY=.*" "HTTPS_PROXY=.*"'
+    #     /etc/systemd/system/docker.service.d/environment.conf
+    #   register: result
+    #   changed_when: result.rc != 0
+
+    - name: Ensure customized daemon flags systemd unit file was created
+      command: grep debug /etc/systemd/system/docker.service.d/options.conf
+      register: result
+      changed_when: result.rc != 0
+
+    # - name: Ensure customized systemd overrides were created
+    #   command: grep ATest /etc/systemd/system/docker.service.d/custom.conf
+    #   register: result
+    #   changed_when: result.rc != 0
+
+    - name: Ensure Docker clean up cron job was added
+      command: grep "docker system prune -af" /etc/cron.d/docker-disk-clean-up
+      register: result
+      changed_when: result.rc != 0
+
+    - name: check docker hello world - test 1/2 # It will not work if there is no internet connection; change img as desired
+      shell: docker run -i hello-world # | awk '/Hello/ {print $1}'
+      register: docker_result
+      #failed_when: docker_result.stdout != "Hello"
+      tags:
+      - check_docker
+      - docker
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Flush handlers like docker-storage-setup, docker, etc
+      meta: flush_handlers
+      tags:
+      - docker
+
+    - name: check docker is running
+      command: 'docker info'
+      tags:
+      - check_docker
+      - docker
+      changed_when: false
+
+    - name: check docker hello world - test 2/2 # It will not work if there is no internet connection
+      shell: docker run -i hello-world | awk '/Hello/ {print $1}'
+      register: command_result
+      failed_when: command_result.stdout != "Hello"
+      tags:
+      - check_docker
+      - docker
+      changed_when: false

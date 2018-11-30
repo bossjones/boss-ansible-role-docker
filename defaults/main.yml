@@ -2,6 +2,7 @@
 boss__docker__install_method: 'pkg'
 # Edition can be one of: 'ce' (Community Edition) or 'ee' (Enterprise Edition).
 boss__docker__edition: 'ce'
+boss__docker__channel: "stable"
 boss__docker__package: "docker-{{ boss__docker__edition }}"
 boss__docker__package_state: present
 
@@ -62,10 +63,19 @@ boss__docker__registries: []
 boss__docker__daemon_options: []
 boss__docker__daemon_environment: []
 
-boss__docker__cron_tasks:
-  - job: docker system prune -f &> /dev/null
-    name: "Docker clean up"
+# boss__docker__cron_tasks:
+#   - name: "Docker disk clean up"
+#     job: docker system prune -af &> /dev/null
+#     schedule: ["0", "0", "*", "*", "0"]
+#     cron_file: "docker-disk-clean-up"
+#     user: "{{ (docker__users|first)|default('root') }}"
+
+boss__docker__cron_jobs:
+  - name: "Docker disk clean up"
+    job: docker system prune -af &> /dev/null
     schedule: ["0", "0", "*", "*", "0"]
+    cron_file: "docker-disk-clean-up"
+    user: "{{ (boss__docker__users|first)|default('root') }}"
 
 boss__docker__package_dependencies:
   - "apt-transport-https"
@@ -74,8 +84,68 @@ boss__docker__package_dependencies:
   - "gnupg2"
   - "cron"
   - "apt-utils"
+  - "python-pip"
   - "mount"
 
 boss__docker__apt_key_id: "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
-boss__docker__apt_key_server: "https://download.docker.com/linux/{{ boss__core__distribution | lower }}/gpg"
+boss__docker__apt_key_server: "https://download.docker.com/linux/{{ boss__core__distribution | lower }}/gpg"  # yamllint disable-line rule:line-length
 boss__docker__apt_cache_time: 86400
+
+
+# SOURCE: https://github.com/nickjj/ansible-docker/blob/c8d80b2ec3eeb97973e1571078400fec61fef7d0/defaults/main.yml
+boss__docker__default_daemon_json_log_max_size: "10m"
+boss__docker__default_daemon_json_log_max_file: 5
+
+boss__docker__default_daemon_json: |
+  "dns": ["8.8.8.8"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "{{ boss__docker__default_daemon_json_log_max_size }}",
+    "max-file": "{{ boss__docker__default_daemon_json_log_max_file }}"
+  }
+
+# Add your own additional daemon options without overriding the default options.
+# It follows the same format as the default options, and don't worry about
+# starting it off with a comma. The template will add the comma if needed.
+boss__docker__daemon_json: ""
+
+boss__docker__daemon_flags:
+  - "--debug -H 0.0.0.0:2375 -H unix:///var/run/docker.sock $DOCKER_DAEMON_ARGS"
+
+boss__docker__systemd_override: ""
+
+
+# get.wants    docker.service        getty.target.wants  iscsi.service           multi-user.target.wants  open-vm-tools.service.requires  remote-fs.target.wants  sshd.service          syslog.service
+# root@master:~# cat /etc/systemd/system/docker.service
+# # Ansible managed
+
+# [Unit]
+# Description=Docker Application Container Engine
+# Documentation=https://docs.docker.com
+# After=network-online.target docker.socket
+# Requires=docker.socket
+
+# [Service]
+# Type=notify
+# # the default is not to use systemd for cgroups because the delegate issues still
+# # exists and systemd currently does not support the cgroup feature set required
+# # for containers run by docker
+# ExecStart=/usr/bin/dockerd --dns 8.8.8.8 --log-driver=json-file --log-opt=max-size=10m --log-opt=max-file=5 --debug -H 0.0.0.0:2375 -H unix:///var/run/docker.sock $DOCKER_DAEMON_ARGS
+# ExecReload=/bin/kill -s HUP $MAINPID
+# # Having non-zero Limit*s causes performance problems due to accounting overhead
+# # in the kernel. We recommend using cgroups to do container-local accounting.
+# LimitNOFILE=infinity
+# LimitNPROC=infinity
+# LimitCORE=infinity
+# # Uncomment TasksMax if your systemd version supports it.
+# # Only systemd 226 and above support this version.
+# TasksMax=infinity
+# TimeoutStartSec=0
+# # set delegate yes so that systemd does not reset the cgroups of docker containers
+# Delegate=yes
+# # kill only the docker process, not all processes in the cgroup
+# KillMode=process
+
+# [Install]
+# WantedBy=multi-user.target
+# root@master:~#

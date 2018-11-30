@@ -1,0 +1,11 @@
+{
+{%- if boss__docker__default_daemon_json | default() -%}
+{{ boss__docker__default_daemon_json | indent(2, true) }}
+{%- endif -%}
+{%- if (boss__docker__default_daemon_json | default()) and (boss__docker__daemon_json | default()) -%}
+,
+{%- endif -%}
+{%- if boss__docker__daemon_json | default() -%}
+{{ boss__docker__daemon_json | indent(2, true) }}
+{%- endif -%}
+}
