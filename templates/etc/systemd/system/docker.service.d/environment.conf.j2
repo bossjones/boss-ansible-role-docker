@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+
+[Service]
+Environment="{{ boss__docker__daemon_environment | join('" "') }}"
