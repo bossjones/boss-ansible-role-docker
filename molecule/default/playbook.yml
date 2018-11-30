@@ -36,9 +36,9 @@
     - role: boss-ansible-role-core
     - role: boss-ansible-role-fact
     - role: boss-ansible-role-environment
-    - role: boss-ansible-role-etckeeper
+    # - role: boss-ansible-role-etckeeper
     - role: geerlingguy.pip
-    - role: ../
+    - role: boss-ansible-role-docker
       boss__docker__install_method: "pkg"
 
   ##################################################################################
