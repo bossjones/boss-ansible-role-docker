@@ -5,26 +5,30 @@
     :ip: "192.168.13.100"
     :ram: 1024
     :cpu: 2
-    :box: "debian/stretch64"
+    # :box: "debian/stretch64"
+    :box: "ubuntu/xenial64"
+    :id: 10
 
-  docker2:
-    :hostname: "docker2"
-    :ip: "192.168.13.101"
-    :ram: 1024
-    :cpu: 2
-    :box: "debian/stretch64"
+  # docker2:
+  #   :hostname: "docker2"
+  #   :ip: "192.168.13.101"
+  #   :ram: 1024
+  #   :cpu: 2
+  #   :box: "debian/stretch64"
+  #   # :box: "ubuntu/xenial64"
+  #   :id: 11
 
 :groups:
   docker1:
     - docker1
-  docker2:
-    - docker2
+  # docker2:
+  #   - docker2
   docker_servers:
     - docker1
-    - docker2
+    # - docker2
   servers:
     - docker1
-    - docker2
+    # - docker2
   dns_servers:
     - docker1
-    - docker2
+    # - docker2
