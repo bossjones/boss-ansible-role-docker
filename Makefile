@@ -51,6 +51,12 @@ list:
 download-roles:
 	ansible-galaxy install -r requirements.yml --roles-path ./roles/
 
+download-roles-global:
+	ansible-galaxy install -r requirements.yml --roles-path=/etc/ansible/roles
+
+download-roles-global-force:
+	ansible-galaxy install --force -r requirements.yml --roles-path=/etc/ansible/roles
+
 raw:
 	$(call check_defined, product, Please set product)
 	$(call check_defined, command, Please set command)
