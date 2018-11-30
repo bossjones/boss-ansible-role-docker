@@ -97,6 +97,7 @@ boss__docker__default_daemon_json_log_max_size: "10m"
 boss__docker__default_daemon_json_log_max_file: 5
 
 boss__docker__default_daemon_json: |
+  "dns": ["8.8.8.8"],
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "{{ boss__docker__default_daemon_json_log_max_size }}",
@@ -109,7 +110,7 @@ boss__docker__default_daemon_json: |
 boss__docker__daemon_json: ""
 
 boss__docker__daemon_flags:
-  - "--dns 8.8.8.8 --debug -H 0.0.0.0:2375 -H unix:///var/run/docker.sock $DOCKER_DAEMON_ARGS"
+  - "--debug -H 0.0.0.0:2375 -H unix:///var/run/docker.sock $DOCKER_DAEMON_ARGS"
 
 boss__docker__systemd_override: ""
 
