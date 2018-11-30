@@ -63,12 +63,19 @@ boss__docker__registries: []
 boss__docker__daemon_options: []
 boss__docker__daemon_environment: []
 
-boss__docker__cron_tasks:
+# boss__docker__cron_tasks:
+#   - name: "Docker disk clean up"
+#     job: docker system prune -af &> /dev/null
+#     schedule: ["0", "0", "*", "*", "0"]
+#     cron_file: "docker-disk-clean-up"
+#     user: "{{ (docker__users|first)|default('root') }}"
+
+boss__docker__cron_jobs:
   - name: "Docker disk clean up"
     job: docker system prune -af &> /dev/null
     schedule: ["0", "0", "*", "*", "0"]
     cron_file: "docker-disk-clean-up"
-    user: "{{ (docker__users|first)|default('root') }}"
+    user: "{{ (boss__docker__users|first)|default('root') }}"
 
 boss__docker__package_dependencies:
   - "apt-transport-https"

@@ -60,22 +60,22 @@
         shell: "/bin/bash"
 
   roles:
-    - role: boss-ansible-role-bootstrap
-      # Disable raw commands to avoid sudo issues.
-      boss__bootstrap_raw: False
-      # Don't set domain on Travis.
-      boss__bootstrap_domain: ''
-      # Try bootstrapping a different IP address to avoid idempotency loop.
-      # boss__bootstrap_ipv4: '127.0.1.2'
-      # boss__hosts_file: /etc/hosts.molecule
-      boss__bootstrap_admin_default_users:
-        - name: bossjones
-      boss__bootstrap_admin_groups: [ 'admins', 'staff', 'adm', 'sudo', 'bossjones' ]
-      boss__bootstrap_admin_system: False
-    - role: boss-ansible-role-core
-    - role: boss-ansible-role-fact
-    - role: boss-ansible-role-environment
-    - role: boss-ansible-role-etckeeper
+    # - role: boss-ansible-role-bootstrap
+    #   # Disable raw commands to avoid sudo issues.
+    #   boss__bootstrap_raw: False
+    #   # Don't set domain on Travis.
+    #   boss__bootstrap_domain: ''
+    #   # Try bootstrapping a different IP address to avoid idempotency loop.
+    #   # boss__bootstrap_ipv4: '127.0.1.2'
+    #   # boss__hosts_file: /etc/hosts.molecule
+    #   boss__bootstrap_admin_default_users:
+    #     - name: bossjones
+    #   boss__bootstrap_admin_groups: [ 'admins', 'staff', 'adm', 'sudo', 'bossjones' ]
+    #   boss__bootstrap_admin_system: False
+    # - role: boss-ansible-role-core
+    # - role: boss-ansible-role-fact
+    # - role: boss-ansible-role-environment
+    # - role: boss-ansible-role-etckeeper
     - role: geerlingguy.pip
     - role: ../
       boss__docker__install_method: "pkg"

@@ -51,9 +51,15 @@
 #   notify: ["Restart Docker"]
 #   when: not boss__docker__remove_package or boss__docker__register_systemd_service is changed
 
+# SOURCE: https://raymii.org/s/tutorials/Ansible_-_Only_if_a_file_exists_or_does_not_exist.html
+- name: stat  /etc/systemd/system/docker.service
+  stat: path=/etc/systemd/system/docker.service
+  register: docker_systemd_unit_file
 
 - name: dump /etc/systemd/system/docker.service
   command: 'cat /etc/systemd/system/docker.service'
+  when: docker_systemd_unit_file.stat.exists == True
+
 # - name: Add user(s) to "docker" group
 #   user:
 #     name: "{{ item }}"
