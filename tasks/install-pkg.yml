@@ -35,49 +35,70 @@
 - name: DUMP docker_version
   debug: var=docker_version
 
-# wait to verify node is started
-- name: "Pausing 300 seconds"
-  pause:
-    seconds: 300
-# - name: Disable pinned Docker version
-#   file:
-#     dest: "/etc/apt/preferences.d/docker-ce.pref"
-#     state: "absent"
-#   when: boss__docker__remove_package or boss__docker__version == "" or boss__docker__version == "latest"
+# # wait to verify node is started
+# - name: "Pausing 300 seconds"
+#   pause:
+#     seconds: 300
 
-# - name: Pin Docker version
-#   template:
-#     src: "etc/apt/preferences.d/docker-ce.pref.j2"
-#     dest: "/etc/apt/preferences.d/docker-ce.pref"
-#     owner: "root"
-#     group: "root"
-#     mode: "0644"
-#   when: not boss__docker__remove_package and (boss__docker__version and boss__docker__version != "latest")
+- name: Disable pinned Docker version
+  file:
+    dest: "/etc/apt/preferences.d/docker-ce.pref"
+    state: "absent"
+  when: boss__docker__remove_package or boss__docker__version == "" or boss__docker__version == "latest"
 
-# - name: Install Docker's dependencies
-#   apt:
-#     name: "{{ item }}"
-#     update_cache: true
-#     cache_valid_time: "{{ boss__docker__apt_cache_time }}"
-#   with_items: "{{ boss__docker__package_dependencies }}"
 
-# - name: Add Docker's GPG key
-#   apt_key:
-#     id: "{{ boss__docker__apt_key_id }}"
-#     url: "{{ boss__docker__apt_key_server }}"
+- name: Pin Docker version - /etc/apt/preferences.d/docker-ce.pref
+  template:
+    src: "etc/apt/preferences.d/docker-ce.pref.j2"
+    dest: "/etc/apt/preferences.d/docker-ce.pref"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: not boss__docker__remove_package and (boss__docker__version and boss__docker__version != "latest")
 
-# - name: Configure upstream APT repository
-#   apt_repository:
-#     repo: "{{ boss__docker__apt_repository }}"
-#     update_cache: true
+- name: Pin Docker version - /etc/apt/apt.conf.d/01ubuntu
+  template:
+    src: "etc/apt/apt.conf.d/01ubuntu.j2"
+    dest: "/etc/apt/apt.conf.d/01ubuntu"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: not boss__docker__remove_package and (boss__docker__version and boss__docker__version != "latest")
 
-# # - name: Remove Docker
-# #   apt:
-# #     name: "docker-{{ boss__docker__edition }}"
-# #     state: "absent"
-# #   when: boss__docker__remove_package
+- name: Install Docker's dependencies
+  apt:
+    name: "{{ item }}"
+    update_cache: true
+    cache_valid_time: "{{ boss__docker__apt_cache_time }}"
+  with_items: "{{ boss__docker__package_dependencies }}"
 
-# - name: Install Docker
+- name: Add Docker's GPG key
+  apt_key:
+    id: "{{ boss__docker__apt_key_id }}"
+    url: "{{ boss__docker__apt_key_server }}"
+
+- name: Configure upstream APT repository
+  apt_repository:
+    repo: "{{ boss__docker__apt_repository }}"
+    update_cache: true
+
+- name: Remove Docker
+  apt:
+    name: "docker-{{ boss__docker__edition }}"
+    state: "absent"
+  when: boss__docker__remove_package
+
+- name: Install Docker
+  apt:
+    name: "docker-{{ boss__docker__edition }}={{docker_version}}"
+    update_cache: True
+    cache_valid_time: "{{ boss__docker__apt_cache_time }}"
+    state: "{{ boss__docker__package_state }}"
+  when: not boss__docker__remove_package
+  notify:
+    - restart docker
+
+# - name: Install Docker version
 #   apt:
 #     name: "docker-{{ boss__docker__edition }}"
 #     update_cache: True
@@ -86,133 +107,106 @@
 #   when: not boss__docker__remove_package
 #   notify: restart docker
 
+# - name: Install Docker.
+#   package:
+#     name: "{{ boss__docker__package }}"
+#     state: "{{ boss__docker__package_state }}"
+#   notify: restart docker
 
 
-# # - name: Install Docker version
-# #   apt:
-# #     name: "docker-{{ boss__docker__edition }}"
-# #     update_cache: True
-# #     cache_valid_time: "{{ boss__docker__apt_cache_time }}"
-# #     state: "{{ boss__docker__package_state }}"
-# #   when: not boss__docker__remove_package
-# #   notify: restart docker
+- name: Pin Docker version
+  shell: "apt-cache madison docker-{{ boss__docker__edition }}"
+  register: boss__docker__docker_versions_result
+  when: not boss__docker__remove_package and (boss__docker__version and boss__docker__version != "latest") and (boss__docker__lock_version is defined and boss__docker__lock_version)
 
-# # - name: Install Docker.
-# #   package:
-# #     name: "{{ boss__docker__package }}"
-# #     state: "{{ boss__docker__package_state }}"
-# #   notify: restart docker
+- name: Create Docker configuration directories
+  file:
+    path: "{{ item }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  with_items:
+    - "/etc/docker"
+    - "/etc/systemd/system/docker.service.d"
+
+- name: Configure Docker daemon options (json)
+  template:
+    src: "etc/docker/daemon.json.j2"
+    dest: "/etc/docker/daemon.json"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: boss__docker__default_daemon_json or boss__docker__daemon_json
+
+- name: Configure Docker daemon options (flags)
+  template:
+    src: "etc/systemd/system/docker.service.d/options.conf.j2"
+    dest: "/etc/systemd/system/docker.service.d/options.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: boss__docker__register_daemon_flags
+  when: boss__docker__daemon_flags
+
+- name: Configure Docker daemon environment variables
+  template:
+    src: "etc/systemd/system/docker.service.d/environment.conf.j2"
+    dest: "/etc/systemd/system/docker.service.d/environment.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: boss__docker__register_daemon_environment
+  when: boss__docker__daemon_environment
+
+- name: Configure custom systemd unit file override
+  template:
+    src: "etc/systemd/system/docker.service.d/custom.conf.j2"
+    dest: "/etc/systemd/system/docker.service.d/custom.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: boss__docker__register_custom_override
+  when: boss__docker__systemd_override|default()
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: true
+  when: (boss__docker__register_daemon_flags|default() and
+         boss__docker__register_daemon_flags is changed)
+         or (boss__docker__register_daemon_environment|default() and
+         boss__docker__register_daemon_environment is changed)
+         or (boss__docker__register_custom_override|default() and
+         boss__docker__register_custom_override is changed)
+  notify: ["Restart Docker"]
+
+# - name: 'Add user(s) to "docker" group'
+#   user:
+#     name: "{{ item }}"
+#     groups: "docker"
+#     append: True
+#   with_items:"{{ boss__docker__users }}"
+#   # when: boss__docker__users is defined and boss__docker__users|length > 0
+#   when: boss__docker__users is defined and boss__docker__users|length > 0
 
 
-# - name: Pin Docker version
-#   shell: "apt-cache madison docker-{{ boss__docker__edition }}"
-#   register: boss__docker__docker_versions_result
-#   when: not boss__docker__remove_package and (boss__docker__version and boss__docker__version != "latest") and (boss__docker__lock_version is defined and boss__docker__lock_version)
-
-# - name: Create Docker configuration directories
-#   file:
-#     path: "{{ item }}"
-#     state: "directory"
-#     owner: "root"
-#     group: "root"
-#     mode: "0755"
+# - name: create elb_base_security_groups_external fact, which contains array of SECURITY GROUP ids from filtered external results
+#   set_fact: elb_base_security_groups_external="{{elb_base_security_groups_external}} + ['{{ item.id| default(None) | default(omit) }}']"
+#   when: >
+#     "fact_filtered_external_security_groups is defined and
+#     fact_filtered_external_security_groups|length > 0"
 #   with_items:
-#     - "/etc/docker"
-#     - "/etc/systemd/system/docker.service.d"
+#   -  "{{ fact_filtered_external_security_groups }}"
 
-# - name: Configure Docker daemon options (json)
-#   template:
-#     src: "etc/docker/daemon.json.j2"
-#     dest: "/etc/docker/daemon.json"
-#     owner: "root"
-#     group: "root"
-#     mode: "0644"
-#   when: boss__docker__default_daemon_json or boss__docker__daemon_json
-
-# - name: Configure Docker daemon options (flags)
-#   template:
-#     src: "etc/systemd/system/docker.service.d/options.conf.j2"
-#     dest: "/etc/systemd/system/docker.service.d/options.conf"
-#     owner: "root"
-#     group: "root"
-#     mode: "0644"
-#   register: boss__docker__register_daemon_flags
-#   when: boss__docker__daemon_flags
-
-# - name: Configure Docker daemon environment variables
-#   template:
-#     src: "etc/systemd/system/docker.service.d/environment.conf.j2"
-#     dest: "/etc/systemd/system/docker.service.d/environment.conf"
-#     owner: "root"
-#     group: "root"
-#     mode: "0644"
-#   register: boss__docker__register_daemon_environment
-#   when: boss__docker__daemon_environment
-
-# - name: Configure custom systemd unit file override
-#   template:
-#     src: "etc/systemd/system/docker.service.d/custom.conf.j2"
-#     dest: "/etc/systemd/system/docker.service.d/custom.conf"
-#     owner: "root"
-#     group: "root"
-#     mode: "0644"
-#   register: boss__docker__register_custom_override
-#   when: boss__docker__systemd_override|default()
-
-# - name: Reload systemd daemon
-#   systemd:
-#     daemon_reload: true
-#   when: (boss__docker__register_daemon_flags|default() and
-#          boss__docker__register_daemon_flags is changed)
-#          or (boss__docker__register_daemon_environment|default() and
-#          boss__docker__register_daemon_environment is changed)
-#          or (boss__docker__register_custom_override|default() and
-#          boss__docker__register_custom_override is changed)
-#   notify: ["Restart Docker"]
-
-# # - name: 'Add user(s) to "docker" group'
-# #   user:
-# #     name: "{{ item }}"
-# #     groups: "docker"
-# #     append: True
-# #   with_items:"{{ boss__docker__users }}"
-# #   # when: boss__docker__users is defined and boss__docker__users|length > 0
-# #   when: boss__docker__users is defined and boss__docker__users|length > 0
-
-
-# # - name: create elb_base_security_groups_external fact, which contains array of SECURITY GROUP ids from filtered external results
-# #   set_fact: elb_base_security_groups_external="{{elb_base_security_groups_external}} + ['{{ item.id| default(None) | default(omit) }}']"
-# #   when: >
-# #     "fact_filtered_external_security_groups is defined and
-# #     fact_filtered_external_security_groups|length > 0"
-# #   with_items:
-# #   -  "{{ fact_filtered_external_security_groups }}"
-
-# # - name: Manage login credentials for 1 or more Docker registries
-# #   docker_login:
-# #     registry_url: "{{ item.registry_url|default(omit) }}"
-# #     username: "{{ item.username }}"
-# #     password: "{{ item.password }}"
-# #     email: "{{ item.email|default(omit)}}"
-# #     reauthorize: "{{ item.reauthorize|default(omit) }}"
-# #     state: "{{ item.state|default('present') }}"
-# #   with_items:"{{ boss__docker__registries }}"
-# #   when: item.username|default() and item.password|default()
-# #   become_user: "{{ item.system_user|default((boss__docker__users|first)|default('root')) }}"
-# #   become: true
-
-# # - name: Remove Docker Compose
-# #   file:
-# #     path: "/usr/local/bin/docker-compose"
-# #     state: "absent"
-# #   when: not boss__docker__install_compose
-
-# # - name: Install Docker Compose
-# #   get_url:
-# #     url: "{{ boss__docker__compose_download_url }}"
-# #     dest: "/usr/local/bin/docker-compose"
-# #     force: true
-# #     owner: "root"
-# #     group: "root"
-# #     mode: "0755"
-# #   when: boss__docker__install_compose
+# - name: Manage login credentials for 1 or more Docker registries
+#   docker_login:
+#     registry_url: "{{ item.registry_url|default(omit) }}"
+#     username: "{{ item.username }}"
+#     password: "{{ item.password }}"
+#     email: "{{ item.email|default(omit)}}"
+#     reauthorize: "{{ item.reauthorize|default(omit) }}"
+#     state: "{{ item.state|default('present') }}"
+#   with_items:"{{ boss__docker__registries }}"
+#   when: item.username|default() and item.password|default()
+#   become_user: "{{ item.system_user|default((boss__docker__users|first)|default('root')) }}"
+#   become: true
