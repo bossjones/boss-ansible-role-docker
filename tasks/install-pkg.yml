@@ -17,9 +17,28 @@
   shell: "apt-get update; apt-cache madison docker-{{ boss__docker__edition }}"
   register: boss__docker__docker_versions_result
 
+- name: "get docker version via apt-cache madison"
+  shell: "apt-cache madison docker-ce | grep {{ boss__docker__version }} | head -1 | awk '{print $3}'"
+  register: apt_cache_madison_docker_ce_version_result
+
 - name: DUMP docker versions
   debug: var=boss__docker__docker_versions_result
 
+- name: DUMP docker versions
+  debug: var=apt_cache_madison_docker_ce_version_result
+
+
+- name: Set system architecture for ARMv7
+  set_fact:
+    docker_version: "{{apt_cache_madison_docker_ce_version_result.stdout}}"
+
+- name: DUMP docker_version
+  debug: var=docker_version
+
+# wait to verify node is started
+- name: "Pausing 300 seconds"
+  pause:
+    seconds: 300
 # - name: Disable pinned Docker version
 #   file:
 #     dest: "/etc/apt/preferences.d/docker-ce.pref"
