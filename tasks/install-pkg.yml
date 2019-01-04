@@ -1,11 +1,58 @@
 ---
-- name: Disable pinned Docker version
+
+# DEFAULT_DOWNLOAD_URL="https://download.docker.com"
+- name: Remove an Apt signing key, https://download.docker.com/linux/ubuntu/gpg
+  apt_key:
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    state: absent
+  when: boss__docker__remove_package
+
+- name: Add an Apt signing key, https://download.docker.com/linux/ubuntu/gpg
+  apt_key:
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    state: present
+  when: not boss__docker__remove_package
+
+- name: "apt-cache madison docker-{{ boss__docker__edition }}"
+  shell: "apt-get update; apt-cache madison docker-{{ boss__docker__edition }}"
+  register: boss__docker__docker_versions_result
+
+- name: "get docker version via apt-cache madison"
+  shell: "apt-cache madison docker-ce | grep {{ boss__docker__version }} | head -1 | awk '{print $3}'"
+  register: apt_cache_madison_docker_ce_version_result
+
+- name: DUMP docker versions
+  debug: var=boss__docker__docker_versions_result
+
+- name: DUMP docker versions
+  debug: var=apt_cache_madison_docker_ce_version_result
+
+
+- name: Set system architecture for ARMv7
+  set_fact:
+    docker_version: "{{apt_cache_madison_docker_ce_version_result.stdout}}"
+
+- name: DUMP docker_version
+  debug: var=docker_version
+
+# # wait to verify node is started
+# - name: "Pausing 300 seconds"
+#   pause:
+#     seconds: 300
+
+- name: Disable pinned Docker version - /etc/apt/preferences.d/docker-ce.pref
   file:
     dest: "/etc/apt/preferences.d/docker-ce.pref"
     state: "absent"
   when: boss__docker__remove_package or boss__docker__version == "" or boss__docker__version == "latest"
 
-- name: Pin Docker version
+- name: Disable pinned Docker version - /etc/apt/apt.conf.d/01ubuntu
+  file:
+    dest: "/etc/apt/apt.conf.d/01ubuntu"
+    state: "absent"
+  when: boss__docker__remove_package or boss__docker__version == "" or boss__docker__version == "latest"
+
+- name: Pin Docker version - /etc/apt/preferences.d/docker-ce.pref
   template:
     src: "etc/apt/preferences.d/docker-ce.pref.j2"
     dest: "/etc/apt/preferences.d/docker-ce.pref"
@@ -14,10 +61,19 @@
     mode: "0644"
   when: not boss__docker__remove_package and (boss__docker__version and boss__docker__version != "latest")
 
+- name: Pin Docker version - /etc/apt/apt.conf.d/01ubuntu
+  template:
+    src: "etc/apt/apt.conf.d/01ubuntu.j2"
+    dest: "/etc/apt/apt.conf.d/01ubuntu"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: not boss__docker__remove_package and (boss__docker__version and boss__docker__version != "latest")
+
 - name: Install Docker's dependencies
   apt:
     name: "{{ item }}"
-    update_cache: True
+    update_cache: true
     cache_valid_time: "{{ boss__docker__apt_cache_time }}"
   with_items: "{{ boss__docker__package_dependencies }}"
 
@@ -31,20 +87,30 @@
     repo: "{{ boss__docker__apt_repository }}"
     update_cache: true
 
-# - name: Remove Docker
-#   apt:
-#     name: "docker-{{ boss__docker__edition }}"
-#     state: "absent"
-#   when: boss__docker__remove_package
+- name: Remove Docker
+  apt:
+    name: "docker-{{ boss__docker__edition }}"
+    state: "absent"
+  when: boss__docker__remove_package
 
 - name: Install Docker
   apt:
-    name: "docker-{{ boss__docker__edition }}"
+    name: "docker-{{ boss__docker__edition }}={{docker_version}}"
     update_cache: True
     cache_valid_time: "{{ boss__docker__apt_cache_time }}"
     state: "{{ boss__docker__package_state }}"
   when: not boss__docker__remove_package
-  notify: restart docker
+  notify:
+    - restart docker
+
+# - name: Install Docker version
+#   apt:
+#     name: "docker-{{ boss__docker__edition }}"
+#     update_cache: True
+#     cache_valid_time: "{{ boss__docker__apt_cache_time }}"
+#     state: "{{ boss__docker__package_state }}"
+#   when: not boss__docker__remove_package
+#   notify: restart docker
 
 # - name: Install Docker.
 #   package:
@@ -53,6 +119,11 @@
 #   notify: restart docker
 
 
+- name: Pin Docker version
+  shell: "apt-cache madison docker-{{ boss__docker__edition }}"
+  register: boss__docker__docker_versions_result
+  when: not boss__docker__remove_package and (boss__docker__version and boss__docker__version != "latest") and (boss__docker__lock_version is defined and boss__docker__lock_version)
+
 - name: Create Docker configuration directories
   file:
     path: "{{ item }}"
@@ -60,7 +131,7 @@
     owner: "root"
     group: "root"
     mode: "0755"
-  loop:
+  with_items:
     - "/etc/docker"
     - "/etc/systemd/system/docker.service.d"
 
@@ -114,12 +185,23 @@
          boss__docker__register_custom_override is changed)
   notify: ["Restart Docker"]
 
-# - name: Add user(s) to "docker" group
+# - name: 'Add user(s) to "docker" group'
 #   user:
 #     name: "{{ item }}"
 #     groups: "docker"
-#     append: true
+#     append: True
 #   with_items:"{{ boss__docker__users }}"
+#   # when: boss__docker__users is defined and boss__docker__users|length > 0
+#   when: boss__docker__users is defined and boss__docker__users|length > 0
+
+
+# - name: create elb_base_security_groups_external fact, which contains array of SECURITY GROUP ids from filtered external results
+#   set_fact: elb_base_security_groups_external="{{elb_base_security_groups_external}} + ['{{ item.id| default(None) | default(omit) }}']"
+#   when: >
+#     "fact_filtered_external_security_groups is defined and
+#     fact_filtered_external_security_groups|length > 0"
+#   with_items:
+#   -  "{{ fact_filtered_external_security_groups }}"
 
 # - name: Manage login credentials for 1 or more Docker registries
 #   docker_login:
@@ -133,19 +215,3 @@
 #   when: item.username|default() and item.password|default()
 #   become_user: "{{ item.system_user|default((boss__docker__users|first)|default('root')) }}"
 #   become: true
-
-# - name: Remove Docker Compose
-#   file:
-#     path: "/usr/local/bin/docker-compose"
-#     state: "absent"
-#   when: not boss__docker__install_docker_compose
-
-# - name: Install Docker Compose
-#   get_url:
-#     url: "{{ boss__docker__compose_download_url }}"
-#     dest: "/usr/local/bin/docker-compose"
-#     force: true
-#     owner: "root"
-#     group: "root"
-#     mode: "0755"
-#   when: boss__docker__install_docker_compose

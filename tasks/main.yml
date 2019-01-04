@@ -1,16 +1,21 @@
 ---
-- include_tasks: facts.yml
+- name: facts
+  include_tasks: facts.yml
 
-- include_tasks: setup-RedHat.yml
+- name: setup RedHat
+  include_tasks: setup-RedHat.yml
   when: ansible_os_family == 'RedHat'
 
-- include_tasks: setup-Debian.yml
+- name: setup Debian
+  include_tasks: setup-Debian.yml
   when: ansible_os_family == 'Debian'
 
-- include_tasks: install-pkg.yml
+- name: install-pkg
+  include_tasks: install-pkg.yml
   when: boss__docker__install_method == 'pkg'
 
-- include_tasks: install-shell.yml
+- name: install-shell
+  include_tasks: install-shell.yml
   when: boss__docker__install_method == 'shell'
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -156,6 +161,9 @@
     name: docker
     state: "{{ boss__docker__service_state }}"
     enabled: "{{ boss__docker__service_enabled }}"
+  become: '{{ item }}'
+  with_items:
+    - true  # Run as root
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
