@@ -9,15 +9,15 @@
     SHELL: /bin/bash
   vars:
     hosts_file: /etc/hosts.molecule
-    boss__docker__version: "18.03"
+    boss__docker__version: "17.03"
     boss__docker__users: ["test"]
     boss__docker__daemon_options:
       - "--dns 8.8.8.8 -H 0.0.0.0:2375 -H unix:///var/run/docker.sock $DOCKER_DAEMON_ARGS"
 
   pre_tasks:
-    # - name: Update apt cache.
-    #   apt: update_cache=yes cache_valid_time=600
-    #   when: ansible_os_family == 'Debian'
+    - name: Update apt cache.
+      apt: update_cache=yes cache_valid_time=600
+      when: ansible_os_family == 'Debian'
 
     - name: Add test user
       user:
@@ -144,8 +144,8 @@
       # Don't set domain on Travis.
       boss__bootstrap_domain: ''
       # Try bootstrapping a different IP address to avoid idempotency loop.
-      boss__bootstrap_ipv4: '127.0.1.2'
-      boss__hosts_file: /etc/hosts.molecule
+      # boss__bootstrap_ipv4: '127.0.1.2'
+      # boss__hosts_file: /etc/hosts.molecule
       boss__bootstrap_admin_default_users:
         - name: bossjones
       boss__bootstrap_admin_groups: [ 'admins', 'staff', 'adm', 'sudo', 'bossjones' ]
@@ -215,7 +215,7 @@
     SHELL: /bin/bash
   vars:
     hosts_file: /etc/hosts.molecule
-    boss__docker__version: "18.03"
+    boss__docker__version: "17.03"
     boss__docker__users: ["test"]
     boss__docker__daemon_options:
       - "--dns 8.8.8.8 -H 0.0.0.0:2375 -H unix:///var/run/docker.sock $DOCKER_DAEMON_ARGS"
