@@ -151,3 +151,14 @@ boss__docker__systemd_override: ""
 # [Install]
 # WantedBy=multi-user.target
 # root@master:~#
+
+# boss__docker__docker_plugins:
+# - {}
+# All available plugins
+# https://github.com/rancher/convoy
+# docker plugin install weaveworks/net-plugin:latest_release
+# https://www.weave.works/docs/net/latest/install/plugin/plugin-v2/
+# https://github.com/CWSpear/local-persist
+# https://github.com/ContainX/docker-volume-netshare
+# https://github.com/ContainX/docker-volume-netshare
+# https://docs.docker.com/engine/extend/legacy_plugins/#installing-a-plugin
