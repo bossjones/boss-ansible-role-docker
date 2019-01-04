@@ -40,12 +40,17 @@
 #   pause:
 #     seconds: 300
 
-- name: Disable pinned Docker version
+- name: Disable pinned Docker version - /etc/apt/preferences.d/docker-ce.pref
   file:
     dest: "/etc/apt/preferences.d/docker-ce.pref"
     state: "absent"
   when: boss__docker__remove_package or boss__docker__version == "" or boss__docker__version == "latest"
 
+- name: Disable pinned Docker version - /etc/apt/apt.conf.d/01ubuntu
+  file:
+    dest: "/etc/apt/apt.conf.d/01ubuntu"
+    state: "absent"
+  when: boss__docker__remove_package or boss__docker__version == "" or boss__docker__version == "latest"
 
 - name: Pin Docker version - /etc/apt/preferences.d/docker-ce.pref
   template:
