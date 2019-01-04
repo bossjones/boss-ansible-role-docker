@@ -175,16 +175,16 @@
       register: result
       changed_when: result.rc != 0
 
-    - name: Ensure /etc/systemd/system/docker.service contains '--dns 8.8.8.8'
-      # Double dashes: https://unix.stackexchange.com/a/11382
-      command: grep -- "--dns 8.8.8.8" /etc/systemd/system/docker.service
-      register: result
-      changed_when: result.rc != 0
+    # - name: Ensure /etc/systemd/system/docker.service contains '--dns 8.8.8.8'
+    #   # Double dashes: https://unix.stackexchange.com/a/11382
+    #   command: grep -- "--dns 8.8.8.8" /etc/systemd/system/docker.service
+    #   register: result
+    #   changed_when: result.rc != 0
 
-    - name: Ensure Docker clean up cron job was added
-      command: crontab -l
-      register: result
-      changed_when: not result.stdout is search("docker system prune -f")
+    # - name: Ensure Docker clean up cron job was added
+    #   command: crontab -l
+    #   register: result
+    #   changed_when: not result.stdout is search("docker system prune -f")
 
 
 
@@ -381,13 +381,13 @@
       register: result
       changed_when: result.rc != 0
 
-    - name: Ensure /etc/systemd/system/docker.service contains '--dns 8.8.8.8'
-      # Double dashes: https://unix.stackexchange.com/a/11382
-      command: grep -- "--dns 8.8.8.8" /etc/systemd/system/docker.service
-      register: result
-      changed_when: result.rc != 0
+    # - name: Ensure /etc/systemd/system/docker.service contains '--dns 8.8.8.8'
+    #   # Double dashes: https://unix.stackexchange.com/a/11382
+    #   command: grep -- "--dns 8.8.8.8" /etc/systemd/system/docker.service
+    #   register: result
+    #   changed_when: result.rc != 0
 
-    - name: Ensure Docker clean up cron job was added
-      command: crontab -l
-      register: result
-      changed_when: not result.stdout is search("docker system prune -f")
+    # - name: Ensure Docker clean up cron job was added
+    #   command: crontab -l
+    #   register: result
+    #   changed_when: not result.stdout is search("docker system prune -f")
