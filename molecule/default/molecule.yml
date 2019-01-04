@@ -45,7 +45,7 @@ platforms:
     image_version: latest
     privileged: True
     pre_build_image: True
-    command: ${MOLECULE_DOCKER_COMMAND:-"sleep infinity"}
+    # command: ${MOLECULE_DOCKER_COMMAND:-"sleep infinity"}
     groups:
         - servers
     capabilities:
@@ -83,15 +83,15 @@ provisioner:
           address: 127.0.1.2
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-playbook.yml}
-scenario:
-  name: default
-verifier:
-  name: testinfra
-  options:
-    verbose: True
-  lint:
-    name: flake8
-    enabled: False
+# scenario:
+#   name: default
+# verifier:
+#   name: testinfra
+#   options:
+#     verbose: True
+#   lint:
+#     name: flake8
+#     enabled: False
 
 scenario:
   name: default
