@@ -2,5 +2,29 @@
 # Fetches the docker installation script
 # from `get.docker.com` and then pipes the
 # script to `sh` so that it gets executed.
-- name: 'install docker'
-  command: 'bash -c "curl -fsSL https://get.docker.com/ | sh"; bash -c "touch /docker-installed-shell"' creates=/docker-installed-shell
+# - name: 'install docker'
+#   command: 'bash -c "curl -fsSL https://get.docker.com/ | sh"; bash -c "touch /docker-installed-shell"' creates=/docker-installed-shell
+
+
+# https://github.com/nodesource/distributions/blob/master/README.md
+- name: install docker via shell
+  shell: |
+    curl -fsSL https://get.docker.com/ | sh
+    touch /docker-installed-shell
+  become: '{{ item }}'
+  args:
+    executable: /bin/bash
+    creates: '/docker-installed-shell'
+  with_items:
+    - true  # Run as root
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: true
+  when: (boss__docker__register_daemon_flags|default() and
+         boss__docker__register_daemon_flags is changed)
+         or (boss__docker__register_daemon_environment|default() and
+         boss__docker__register_daemon_environment is changed)
+         or (boss__docker__register_custom_override|default() and
+         boss__docker__register_custom_override is changed)
+  notify: ["Restart Docker"]

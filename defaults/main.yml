@@ -55,6 +55,7 @@ boss__docker__users: []
 boss__docker__remove_package: False
 
 boss__docker__version: "latest"
+boss__docker__lock_version: False
 
 # boss__docker__compose_version: "1.22.0"
 
@@ -86,6 +87,7 @@ boss__docker__package_dependencies:
   - "apt-utils"
   - "python-pip"
   - "mount"
+  - "curl"
 
 boss__docker__apt_key_id: "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
 boss__docker__apt_key_server: "https://download.docker.com/linux/{{ boss__core__distribution | lower }}/gpg"  # yamllint disable-line rule:line-length
@@ -149,3 +151,14 @@ boss__docker__systemd_override: ""
 # [Install]
 # WantedBy=multi-user.target
 # root@master:~#
+
+# boss__docker__docker_plugins:
+# - {}
+# All available plugins
+# https://github.com/rancher/convoy
+# docker plugin install weaveworks/net-plugin:latest_release
+# https://www.weave.works/docs/net/latest/install/plugin/plugin-v2/
+# https://github.com/CWSpear/local-persist
+# https://github.com/ContainX/docker-volume-netshare
+# https://github.com/ContainX/docker-volume-netshare
+# https://docs.docker.com/engine/extend/legacy_plugins/#installing-a-plugin

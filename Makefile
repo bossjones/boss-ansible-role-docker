@@ -51,6 +51,9 @@ list:
 download-roles:
 	ansible-galaxy install -r requirements.yml --roles-path ./roles/
 
+download-roles-force:
+	ansible-galaxy install --force -r requirements.yml --roles-path ./roles/
+
 download-roles-global:
 	ansible-galaxy install -r requirements.yml --roles-path=/etc/ansible/roles
 
@@ -153,6 +156,7 @@ reload:
 	@vagrant reload
 
 destroy:
+	@vagrant halt -f
 	@vagrant destroy -f
 
 run-ansible:
@@ -165,7 +169,7 @@ run-ansible-master:
 	@ansible-playbook -i inventory.ini vagrant_playbook.yml -v --tags "master"
 
 ping:
-	@ansible-playbook -v -i inventory.ini ping.yml
+	@ansible-playbook -i inventory.ini ping.yml -v
 
 # [ANSIBLE0013] Use shell only when shell functionality is required
 ansible-lint-role:
@@ -173,3 +177,5 @@ ansible-lint-role:
 
 yamllint-role:
 	bash -c "find .* -type f -name '*.y*ml' ! -name '*.venv' -print0 | xargs -I FILE -t -0 -n1 yamllint FILE"
+
+converge: up run-ansible
